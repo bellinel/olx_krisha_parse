@@ -52,7 +52,7 @@ playwright install webkit
 
 ```bash
 # Копирование файла с переменными окружения
-cp env.example .env
+cp .env.example .env
 
 # Редактирование файла .env
 notepad .env  # Windows
@@ -168,7 +168,7 @@ pars-master/
 ├── olx_req.py           # 🔍 Парсер OLX.kz
 ├── google_table.py      # 📊 Модуль для Google Sheets
 ├── requirements.txt     # 📦 Зависимости проекта
-├── env.example          # 📝 Пример конфигурации
+├── .env.example         # 📝 Пример конфигурации
 ├── .gitignore           # 🚫 Исключения для Git
 ├── README.md            # 📖 Документация
 ├── creds.json           # 🔑 Google API ключи (не в Git)
