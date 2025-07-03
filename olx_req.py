@@ -58,7 +58,7 @@ async def olx_get_data():
             phone_button = await page.query_selector('button[data-cy="ad-contact-phone"]')
             if phone_button:
                 await phone_button.click()
-                await page.wait_for_timeout(1000)
+                await page.wait_for_timeout(3000)
                 phone_el = await page.query_selector('span.n-button-text-wrapper a')
                 phone = await phone_el.text_content() if phone_el else 'Не найдено'
         except:
