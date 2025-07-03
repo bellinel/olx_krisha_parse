@@ -35,7 +35,7 @@ async def olx_get_data():
         await page.wait_for_timeout(2000)
 
         data = {}
-
+        data['url'] = full_url
         # Параметры
         param_container = await page.query_selector('div[data-testid="ad-parameters-container"]')
         if param_container:
