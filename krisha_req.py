@@ -77,7 +77,7 @@ async def get_data_krisha():
         # Проверяем наличие ссылки на личный кабинет (значит пользователь авторизован)
         login_link = await page.query_selector('li.cabinet-link-item > a.cabinet-link')
         if login_link:
-            print("KRISHA:Не найден личный кабинет — пробуем получить куки заново")
+            print("KRISHA:Не авторизован — пробуем получить куки заново")
             await browser.close()
             await get_cookies()  # Запускаем авторизацию и сохраняем куки
             return # После авторизации перезапускай скрипт

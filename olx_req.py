@@ -35,7 +35,7 @@ async def olx_get_data():
         await page.wait_for_timeout(2000)
 
         data = {}
-        data['url'] = full_url
+        
         # Параметры
         param_container = await page.query_selector('div[data-testid="ad-parameters-container"]')
         if param_container:
@@ -48,22 +48,23 @@ async def olx_get_data():
                 if ':' in text:
                     k, v = [s.strip() for s in text.split(':', 1)]
                     data[k] = v
-
+        
         # Описание
         description = await safe_get_text(page, 'div[data-cy="ad_description"] div.css-19duwlz')
         
 
         # Телефон
         try:
-            phone_button = await page.query_selector('button[data-cy="ad-contact-phone"]')
+            phone_button = await page.query_selector('button[data-testid="show-phone"]')
             if phone_button:
                 await phone_button.click()
                 await page.wait_for_timeout(3000)
-                phone_el = await page.query_selector('span.n-button-text-wrapper a')
+                phone_el = await page.query_selector('div.css-1478ixo a[class="css-oexhm1"]')
+                
                 phone = await phone_el.text_content() if phone_el else 'Не найдено'
         except:
             phone = 'Не найдено'
-         
+        data['url'] = full_url
         data['телефон'] = phone
         data['описание'] = description
 
