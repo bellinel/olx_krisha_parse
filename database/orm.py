@@ -63,3 +63,4 @@ async def clear_olx_table():
         await session.commit()
         print("🧹 Таблица OlxId очищена.")
         
+

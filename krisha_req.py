@@ -196,5 +196,3 @@ async def get_data_krisha():
 
         await browser.close()
         return data
-
-

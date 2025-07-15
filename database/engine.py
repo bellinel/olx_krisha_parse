@@ -4,7 +4,7 @@ import os
 import logging
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import Column, Integer, Boolean, String
+from sqlalchemy import Column, Integer, Boolean, String, Text
 
 
 
@@ -68,6 +68,4 @@ class OlxId(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False, unique=True, default='1')
-
-
 

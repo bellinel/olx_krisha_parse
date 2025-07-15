@@ -1,19 +1,9 @@
 import asyncio
 from playwright.async_api import async_playwright
-import os
 
 from database.orm import update_site_olx
 from krisha_req import safe_get_text
 
-TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates', 'olx_template.html')
-OUTPUT_PATH = os.path.join(os.path.dirname(__file__), 'olx_result.html')
-
-def render_html(data):
-    with open(TEMPLATE_PATH, encoding='utf-8') as f:
-        template = f.read()
-    for key, value in data.items():
-        template = template.replace(f'{{{{ {key} }}}}', str(value))
-    return template
 
 async def olx_get_data():
     async with async_playwright() as p:
@@ -45,8 +35,7 @@ async def olx_get_data():
         await page.wait_for_timeout(2000)
 
         data = {}
-        data['url'] = full_url
-        data['title'] = title
+        
         # Параметры
         param_container = await page.query_selector('div[data-testid="ad-parameters-container"]')
         if param_container:
@@ -59,32 +48,29 @@ async def olx_get_data():
                 if ':' in text:
                     k, v = [s.strip() for s in text.split(':', 1)]
                     data[k] = v
-
+        
         # Описание
         description = await safe_get_text(page, 'div[data-cy="ad_description"] div.css-19duwlz')
-        data['description'] = description
+        
 
         # Телефон
         try:
-            phone_button = await page.query_selector('button[data-cy="ad-contact-phone"]')
+            phone_button = await page.query_selector('button[data-testid="show-phone"]')
             if phone_button:
                 await phone_button.click()
-                await page.wait_for_timeout(1000)
-                phone_el = await page.query_selector('span.n-button-text-wrapper a')
+                await page.wait_for_timeout(3000)
+                phone_el = await page.query_selector('div.css-1478ixo a[class="css-oexhm1"]')
+                
                 phone = await phone_el.text_content() if phone_el else 'Не найдено'
         except:
             phone = 'Не найдено'
+        data['url'] = full_url
+        data['телефон'] = phone
+        data['описание'] = description
+
         
-        data['phone'] = phone
 
         await browser.close()
-
-        # Сохраняем результат в HTML
-        html = render_html(data)
-        with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
-            f.write(html)
-        print(f'Результат сохранён в {OUTPUT_PATH}')
         return data
 
-# Запуск
-
+# Запуск    
