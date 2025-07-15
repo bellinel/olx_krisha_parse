@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import random
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 from database.orm import update_site_krisha
@@ -49,7 +50,7 @@ async def safe_get_text(page, selector, default="Не найдено"):
 
 async def get_data_krisha():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False)
         context = await browser.new_context(user_agent=(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -140,7 +141,7 @@ async def get_data_krisha():
             btn = await page.query_selector('button.show-phones')
             if btn:
                 await btn.click()
-                await page.wait_for_timeout(1000)
+                await page.wait_for_timeout(random.randint(2000, 5000))
                 phones_el = await page.query_selector('div.offer__contacts-phones')
                 phones = (await phones_el.text_content()).strip().split('\n')
                 phone = ', '.join([p.strip() for p in phones if p.strip()])
@@ -170,11 +171,12 @@ async def get_data_krisha():
         # Фото
         photos = []
         try:
-            sources = await page.query_selector_all('div.gallery__main source[type="image/jpeg"]')
-            for src in sources:
-                srcset = await src.get_attribute('srcset')
-                if srcset:
-                    photos.append(srcset.split()[0])
+            small_con = await page.query_selector_all('ul.gallery__small-list li')
+            for small in small_con:
+                small_src = await small.query_selector('div.gallery__small-item[data-photo-url]')
+                if small_src:
+                    small_src = await small_src.get_attribute('data-photo-url')
+                    photos.append(small_src)
         except:
             pass
         data = {

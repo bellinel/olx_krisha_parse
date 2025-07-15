@@ -127,3 +127,6 @@ bot.db
 # OS
 .DS_Store
 Thumbs.db 
+
+# JSON data
+/data_kvartiri/ 
