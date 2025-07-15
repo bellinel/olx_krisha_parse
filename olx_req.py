@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 from database.orm import update_site_olx
 from krisha_req import safe_get_text
 
-
+#
 async def olx_get_data():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

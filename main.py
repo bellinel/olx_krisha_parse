@@ -17,7 +17,7 @@ from krisha_req import get_data_krisha
 from olx_req import olx_get_data
 
 db = Database()
-
+#
 
 SERVICE_ACCOUNT_FILE = 'creds.json'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']

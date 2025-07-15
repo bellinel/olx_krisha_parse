@@ -5,7 +5,7 @@ import random
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 from database.orm import update_site_krisha
-
+#
 load_dotenv()
 ID_KRISHA = os.getenv('ID_KRISHA')
 PASSWORD_KRISHA = os.getenv('PASSWORD_KRISHA')

@@ -1,6 +1,7 @@
 # Конфиденциальные файлы
 creds.json
 .env
+data_kvartiri
 
 # Python
 __pycache__/
@@ -126,7 +127,7 @@ bot.db
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
 
 # JSON data
-/data_kvartiri/ 
+/data_kvartiri/
