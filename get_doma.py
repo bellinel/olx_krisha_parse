@@ -18,24 +18,20 @@ login_data = {
     'password': PASSWORD_KRISHA
 }
 
+# Конфигурация
 
-#Конфигурация
-
-#Начальная и конечная страница
+# Начальная и конечная страница
 START_PAGE = 1
 END_PAGE = 2
-#Ссылка по которой парсим
+# Ссылка по которой парсим
 BASE_URL = 'https://krisha.kz/prodazha/doma-dachi/taldykorgan/?das[who]=1'
-#Папка для сохранения JSON-файлов
+# Папка для сохранения JSON-файлов
 JSON_DATA_PATH = 'data_doma'
-#Название листа в Google Таблице
+# Название листа в Google Таблице
 WORKSHEET_TITLE = 'Дома'
 
-
-
-#Создаем папку для сохранения JSON-файлов
+# Создаем папку для сохранения JSON-файлов
 os.makedirs(JSON_DATA_PATH, exist_ok=True)
-
 
 
 async def get_cookies():
@@ -76,10 +72,10 @@ async def get_all_data_krisha():
         browser = await p.firefox.launch(headless=False)
         fake_useragent = UserAgent()
         context = await browser.new_context(
-            
+
             user_agent=fake_useragent.firefox,
             locale="ru-RU",
-            
+
         )
 
         # Загружаем куки
@@ -93,7 +89,7 @@ async def get_all_data_krisha():
             await get_cookies()
             await browser.close()
             return
-        
+
         page = await context.new_page()
         await page.add_init_script("""Object.defineProperty(navigator, 'webdriver', {get: () => undefined})""")
         print('KRISHA:Загружаем страницу')
@@ -101,9 +97,7 @@ async def get_all_data_krisha():
             await page.goto(BASE_URL, wait_until="networkidle")
         except:
             print('KRISHA:Ошибка при загрузке страницы')
-            
-        
-        
+
         for _ in range(2):
             await page.mouse.wheel(0, 1000)
             await page.wait_for_timeout(1000)
@@ -113,15 +107,13 @@ async def get_all_data_krisha():
                 await btn.click()
         except:
             pass
-        
+
         for i in range(START_PAGE, END_PAGE):
             # Навигация на страницу
             print(i)
             all_data = []
-            
-            
 
-        # Проверяем наличие ссылки на личный кабинет (значит пользователь авторизован)
+            # Проверяем наличие ссылки на личный кабинет (значит пользователь авторизован)
             login_link = await page.query_selector('li.cabinet-link-item > a.cabinet-link')
             if login_link:
                 print("KRISHA:Не авторизован — пробуем получить куки заново")
@@ -133,9 +125,6 @@ async def get_all_data_krisha():
             await page.goto(f'{BASE_URL}&page={i}')
             await page.wait_for_selector('div.a-card.a-storage-live.ddl_product', timeout=10000)
 
-            
-            
-           
             await page.wait_for_selector("section.a-list")
             section = await page.query_selector("section.a-list")
 
@@ -144,37 +133,36 @@ async def get_all_data_krisha():
             for url in urls:
                 cur_url = await url.get_attribute("href")
                 urls_list.append(cur_url)
-            
 
             for url in urls_list:
                 try:
 
                     await page.goto("https://krisha.kz" + url)
                     full_url = "https://krisha.kz" + url
-                    await page.wait_for_timeout(random.randint(2000, 5000))
+                    await page.wait_for_timeout(random.randint(1000, 3000))
                 except:
                     print('KRISHA:Ошибка при переходе на страницу')
                     continue
 
-
-
-
                 print('KRISHA:Переходим на страницу')
                 await page.wait_for_selector('div.offer__advert-title h1')
-            
+
                 # Основные поля
                 title = (await safe_get_text(page, 'div.offer__advert-title h1')).strip()
                 price = (await safe_get_text(page, 'div.offer__price')).replace(' ', '').replace('\n', '')
-                description = (await safe_get_text(page, 'div.js-description.a-text.a-text-white-spaces')).strip().replace('\n',
-                                                                                                                        '')
+                description = (
+                    await safe_get_text(page, 'div.js-description.a-text.a-text-white-spaces')).strip().replace('\n',
+                                                                                                                '')
 
                 # Парсинг заголовка
                 try:
                     parts = [part.strip() for part in title.replace('\n', '·').split("·")]
 
-                    rooms = parts[0]
-                    floor, address = parts[2].split(",", 1)
-                    floor, address = floor.strip(), address.strip()
+
+                    rooms = parts[1]
+                    address = parts[3].split(",")[1].strip()
+
+
                 except:
                     rooms, floor, address = "Не найдено", "Не найдено", "Не найдено"
 
@@ -185,13 +173,15 @@ async def get_all_data_krisha():
                     if btn:
                         await btn.click()
                         await page.wait_for_timeout(random.randint(2000, 5000))
-                       
-                      
-                        
+                        await page.evaluate("""element => {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }""", btn)
+                        await page.wait_for_timeout(1000)
+
                         phones_el = await page.query_selector('div.offer__contacts-phones')
                         phones = (await phones_el.text_content()).strip().split('\n')
                         phone = ', '.join([p.strip() for p in phones if p.strip()])
-                        
+
                 except:
                     input('Пройдите капчу и нажмите Enter')
                     await page.reload()
@@ -202,11 +192,11 @@ async def get_all_data_krisha():
                     await page.wait_for_timeout(1000)
                     if btn:
                         await btn.click()
-                        await page.wait_for_timeout(random.randint(2000, 5000))
+                        await page.wait_for_timeout(random.randint(1000, 3000))
                         try:
                             phones_el = await page.query_selector('div.offer__contacts-phones')
                             phones = (await phones_el.text_content()).strip().split('\n')
-                            
+
                             phone = ', '.join([p.strip() for p in phones if p.strip()])
                         except:
                             phone = "Не найдено"
@@ -214,13 +204,22 @@ async def get_all_data_krisha():
                         phone = "Не найдено"
 
                 # Характеристики
-                type_of_house = await safe_get_text(page,
-                                                    'div.offer__info-item[data-name="flat.building"] div.offer__advert-short-info')
-                renovation = await safe_get_text(page,
-                                                'div.offer__info-item[data-name="flat.renovation"] div.offer__advert-short-info')
+                house_building_for = await safe_get_text(page,
+                                                    'div.offer__info-item[data-name="house.building_opts"] div.offer__advert-short-info')
+                sostoyanie = await safe_get_text(page,
+                                                 'div.offer__info-item[data-name="house.renewal"] div.offer__advert-short-info')
                 house_year = await safe_get_text(page,
-                                                'div.offer__info-item[data-name="house.year"] div.offer__advert-short-info')
-                square = await safe_get_text(page, 'div.offer__info-item[data-name="live.square"] div.offer__advert-short-info')
+                                                 'div.offer__info-item[data-name="house.year"] div.offer__advert-short-info')
+                square = await safe_get_text(page,
+                                             'div.offer__info-item[data-name="live.square"] div.offer__advert-short-info')
+
+                square_k = await safe_get_text(page,
+                                             'div.offer__info-item[data-name="live.square_k"] div.offer__advert-short-info')
+                square_land = await safe_get_text(page,
+                                             'div.offer__info-item[data-name="land.square"] div.offer__advert-short-info')
+                naznachenie = await safe_get_text(page,
+                                             'div.offer__info-item[data-name="land.use_case"] div.offer__advert-short-info')
+
 
                 # Параметры
                 params = {}
@@ -239,7 +238,7 @@ async def get_all_data_krisha():
                 # Фото
                 photos = []
                 try:
-                    
+
                     small_con = await page.query_selector_all('ul.gallery__small-list li')
                     for small in small_con:
                         small_src = await small.query_selector('div.gallery__small-item[data-photo-url]')
@@ -253,25 +252,26 @@ async def get_all_data_krisha():
                     'цена': price.replace('\xa0', ''),
                     'телефон': f'"{phone}"',
                     'комнаты': rooms,
-                    'этаж': floor,
                     'адрес': address,
-                    'тип дома': type_of_house,
-                    'ремонт': renovation,
+                    'материал постройки': house_building_for,
                     'год постройки': house_year,
-                    'площадь': square,
+                    'площадь дома': square,
+                    'площадь кухни' :square_k,
+                    'площадь участка': square_land,
+                    'состояние': sostoyanie,
+                    'назначение': naznachenie,
                     'описание': description,
                     'доп. детали': [f'{k}: {v}' for k, v in params.items()],
                     'фото': ', '.join(photos),
                 }
 
-
                 print(data)
                 all_data.append(data)
-                await page.wait_for_timeout(random.randint(2000, 5000))
+
             with open(f'{JSON_DATA_PATH}/data_{i}.json', 'w', encoding='utf-8') as f:
                 json.dump(all_data, f, ensure_ascii=False, indent=4)
+
 
 if __name__ == '__main__':
     asyncio.run(get_all_data_krisha())
     upload_all_json_to_gsheet(data_dir=JSON_DATA_PATH, spreadsheet_url=SPREADSHEET_URL, worksheet_title=WORKSHEET_TITLE)
-    

@@ -5,6 +5,7 @@ import random
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 from database.orm import update_site_krisha
+
 #
 load_dotenv()
 ID_KRISHA = os.getenv('ID_KRISHA')
@@ -14,6 +15,7 @@ login_data = {
     'ID': ID_KRISHA,
     'password': PASSWORD_KRISHA
 }
+
 
 async def get_cookies():
     """Авторизация и сохранение cookies в файл (асинхронно)."""
@@ -81,23 +83,21 @@ async def get_data_krisha():
             print("KRISHA:Не авторизован — пробуем получить куки заново")
             await browser.close()
             await get_cookies()  # Запускаем авторизацию и сохраняем куки
-            return # После авторизации перезапускай скрипт
+            return  # После авторизации перезапускай скрипт
 
         # Ждем появления карточек
         await page.wait_for_selector('div.a-card.a-storage-live.ddl_product', timeout=10000)
-
 
         # Получаем карточку и проверяем "хозяин"
         card = await page.query_selector('div.a-card.a-storage-live.ddl_product')
         owner = await card.query_selector('div.label.label--yellow.label-user-owner')
         card_id = await page.query_selector('div.a-card')
         card_id = await card_id.get_attribute('data-id')
-        
+
         if not owner:
             print('KRISHA:Не от хозяина')
             await browser.close()
             return
-
 
         href = await card.query_selector('a.a-card__image')
         url = f"https://krisha.kz{await href.get_attribute('href')}"
@@ -123,12 +123,13 @@ async def get_data_krisha():
         # Основные поля
         title = (await safe_get_text(page, 'div.offer__advert-title h1')).strip()
         price = (await safe_get_text(page, 'div.offer__price')).replace(' ', '').replace('\n', '')
-        description = (await safe_get_text(page, 'div.js-description.a-text.a-text-white-spaces')).strip().replace('\n', '')
+        description = (await safe_get_text(page, 'div.js-description.a-text.a-text-white-spaces')).strip().replace('\n',
+                                                                                                                   '')
 
         # Парсинг заголовка
         try:
             parts = [part.strip() for part in title.replace('\n', '·').split("·")]
-            
+
             rooms = parts[0]
             floor, address = parts[2].split(",", 1)
             floor, address = floor.strip(), address.strip()
@@ -149,9 +150,12 @@ async def get_data_krisha():
             pass
 
         # Характеристики
-        type_of_house = await safe_get_text(page, 'div.offer__info-item[data-name="flat.building"] div.offer__advert-short-info')
-        renovation = await safe_get_text(page, 'div.offer__info-item[data-name="flat.renovation"] div.offer__advert-short-info')
-        house_year = await safe_get_text(page, 'div.offer__info-item[data-name="house.year"] div.offer__advert-short-info')
+        type_of_house = await safe_get_text(page,
+                                            'div.offer__info-item[data-name="flat.building"] div.offer__advert-short-info')
+        renovation = await safe_get_text(page,
+                                         'div.offer__info-item[data-name="flat.renovation"] div.offer__advert-short-info')
+        house_year = await safe_get_text(page,
+                                         'div.offer__info-item[data-name="house.year"] div.offer__advert-short-info')
         square = await safe_get_text(page, 'div.offer__info-item[data-name="live.square"] div.offer__advert-short-info')
 
         # Параметры
@@ -194,7 +198,6 @@ async def get_data_krisha():
             'доп. детали': [f'{k}: {v}' for k, v in params.items()],
             'фото': ', '.join(photos),
         }
-        
 
         await browser.close()
         return data
