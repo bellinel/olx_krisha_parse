@@ -273,5 +273,5 @@ async def get_all_data_krisha():
 
 if __name__ == '__main__':
     asyncio.run(get_all_data_krisha())
-    upload_all_json_to_gsheet(SPREADSHEET_URL, WORKSHEET_TITLE)
+    upload_all_json_to_gsheet(data_dir=JSON_DATA_PATH, spreadsheet_url=SPREADSHEET_URL, worksheet_title=WORKSHEET_TITLE)
     

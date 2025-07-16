@@ -30,7 +30,7 @@ def append_data_to_gsheet_by_url(flat_data: dict, site: str, spreadsheet_url: st
 
     print(f"{site}✅ Объявление добавлено в таблицу.")
 
-def upload_all_json_to_gsheet(spreadsheet_url: str, worksheet_title: str, json_keyfile: str = 'creds.json', data_dir: str = 'data_kvartiri'):
+def upload_all_json_to_gsheet(data_dir : str, spreadsheet_url: str, worksheet_title: str, json_keyfile: str = 'creds.json'):
     """
     Загружает все квартиры из всех JSON-файлов в папке data_kvartiri в Google Таблицу на лист с названием 'квартиры'.
     Использует массовую запись для обхода лимитов Google API.
